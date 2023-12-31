@@ -22,6 +22,7 @@ void arena_free(Arena *a) {
     free(a);
 }
 
+// TODO: Investigate this resize function
 static void arena_resize(Arena* a) {
     a->mem_len *= 2;
     a->mem = realloc(a->mem, a->mem_len);
@@ -31,7 +32,7 @@ static void arena_resize(Arena* a) {
 // void* arena_resize(Arena* a, )
 
 void* arena_alloc(Arena* a, u64 size) {
-    if (a->mem_len - a->pos_u64 < size) {
+    if (a->mem_len - a->pos_u64 <= size) {
         arena_resize(a);
     }
 

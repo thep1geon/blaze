@@ -4,7 +4,7 @@
 #include "defines.h"
 
 #ifndef ARENA_DEFAULT_SIZE
-#define ARENA_DEFAULT_SIZE 1024
+#define ARENA_DEFAULT_SIZE 1 * 1024 * 1024
 #endif
 
 typedef struct {

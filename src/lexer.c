@@ -79,6 +79,7 @@ String token_type_str(TokenType type) {
         case Token_False:       return string("Token_False");
         case Token_And:         return string("Token_And");
         case Token_Or:          return string("Token_Or");
+        case Token_To:          return string("Token_To");
         case Token_EOF:         return string("Token_EOF");
         case Token_Unexpected:  return string("Token_Unexpected");
         case TokenTypeCount:    return string("TokenTypeCount");
@@ -123,6 +124,9 @@ static TokenType token_get_type(String s) {
     }
     else if (string_eq(string("true"), s)) {
         return Token_True;
+    }
+    else if (string_eq(string("to"), s)) {
+        return Token_To;
     }
     else if (string_eq(string("while"), s)) {
         return Token_While;
@@ -226,8 +230,7 @@ static Token token_make_ident(Lexer* lexer) {
 Lexer* lexer_new(Arena* a, String src) {
     Lexer* l = (Lexer*)arena_alloc(a, sizeof(Lexer));
 
-    l->src = string_alloc(a, src.len);
-    memcpy(l->src.data, src.data, src.len);
+    l->src = src;
     l->cursor = 0;
     l->column = 0;
     l->line_number = 1;
@@ -333,6 +336,7 @@ Token lexer_next_token(Lexer* lexer) {
         case ']': return token(Token_RBrace);
         case '(': return token(Token_LParen);
         case ')': return token(Token_RParen);
+        case '@': return token(Token_At);
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9': {
             return token_make_number(lexer);
@@ -345,6 +349,6 @@ Token lexer_next_token(Lexer* lexer) {
             LexerErr("Unexpected Token", lexer);
         }
 
-        return token(Token_EOF);
+        LexerErr("Unexpected Token", lexer);
     }
 }
