@@ -1,5 +1,5 @@
-#ifndef __TYPES_H
-#define __TYPES_H
+#ifndef __DEFINES_H
+#define __DEFINES_H
 
 #include <stdint.h>
 
@@ -19,6 +19,13 @@ typedef double  f64;
 typedef u8      bool;
 #define true    1
 #define false   0
+
+#ifdef __LP64__
+typedef u64 usize;
+typedef i64 isize;
+#else
+typedef u32 usize;
+typedef i32 isize;
+#endif
           
-#endif  //__TYPES_H
-              
+#endif  //__DEFINES_H

@@ -7,8 +7,8 @@
 #include <string.h>
 #include <ctype.h>
 
-static i32 err_line = 0;
-static i32 err_col = 0;
+static u32 err_line = 0;
+static u32 err_col = 0;
 
 #define LexerErr(msg, lexer) do {\
     err_line = lexer->line_number;\

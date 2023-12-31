@@ -1,7 +1,4 @@
-#include <stdio.h>
-
 #include "include/arena.h"
-
 #include "include/lexer.h"
 #include "include/string.h"
 
