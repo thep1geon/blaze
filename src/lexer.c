@@ -4,7 +4,6 @@
 #include "include/err.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 
 static u32 err_line = 0;
@@ -136,17 +135,35 @@ static TokenType token_get_type(String s) {
 }
 
 static Token token_make_string(Lexer* lexer) {
-    String buf = string_alloc(lexer->arena, 64);
+    usize buf_len = 0;
+    usize src_ptr = lexer->cursor;
+    char c;
+    while ((c = lexer->src.data[src_ptr++]) && c != '"') {
+        if (c == '\\') {
+            c = lexer->src.data[src_ptr];
+
+            switch (c) {
+                case 'n': buf_len++; src_ptr++; break;
+                case 'r': buf_len++; src_ptr++; break;
+                case 't': buf_len++; src_ptr++; break;
+                case 'b': buf_len++; src_ptr++; break;
+                case '\'': buf_len++; src_ptr++; break;
+                case '"': buf_len++; src_ptr++; break;
+                case '\\': buf_len++; src_ptr++; break;
+                default: break;
+            }
+        }
+        buf_len++;
+    }
+
+    String buf = string_alloc(lexer->arena, buf_len+1);
     u64 buf_ptr = 0;
-    while (!lexer_bound(lexer) && 
-        lexer_peek(lexer) != '"' &&
-        buf_ptr < 65
-    ) {
+    while (!lexer_bound(lexer) && lexer_peek(lexer) != '"') {
         char c = lexer_peek(lexer);
         if (c == '\\') {
             lexer_advance(lexer);
 
-            switch (lexer_peek(lexer)) {
+            switch (lexer_consume(lexer)) {
                 case 'n': buf.data[buf_ptr++] = '\n'; break;
                 case 't': buf.data[buf_ptr++] = '\t'; break;
                 case 'r': buf.data[buf_ptr++] = '\r'; break;
@@ -160,13 +177,8 @@ static Token token_make_string(Lexer* lexer) {
             }
         } else {
             buf.data[buf_ptr++] = c;
+            lexer_advance(lexer);
         }
-
-        lexer_advance(lexer);
-    }
-
-    if (buf_ptr >= 65) {
-        LexerErr("String Length Greater than 64", lexer);
     }
 
     if (lexer_bound(lexer)) {
@@ -179,13 +191,21 @@ static Token token_make_string(Lexer* lexer) {
 }
 
 static Token token_make_number(Lexer* lexer) {
-    String buf = string_alloc(lexer->arena, 64);
+    usize buf_len = 0;
+    usize src_ptr = lexer->cursor;
+    char c;
+    while ((c = lexer->src.data[src_ptr++]) && 
+        (isdigit(c) || c == '.')) {
+        buf_len++;
+    }
+
+    String buf = string_alloc(lexer->arena, buf_len+1);
     u64 buf_ptr = 0;
     bool dec_point = false;
 
     buf.data[buf_ptr++] = lexer->src.data[lexer->cursor-1];
 
-    while (!lexer_bound(lexer) && buf_ptr < 65 &&
+    while (!lexer_bound(lexer) &&
     (isdigit(lexer_peek(lexer)) || lexer_peek(lexer) == '.')) {
         char c = lexer_peek(lexer);
         if (c == '.') {
@@ -200,20 +220,24 @@ static Token token_make_number(Lexer* lexer) {
         lexer_advance(lexer);
     }
 
-    if (buf_ptr >= 65) {
-        LexerErr("Number Length Greater than 64", lexer);
-    }
-
     return token_new(Token_Number, buf);
 }
 
 static Token token_make_ident(Lexer* lexer) {
-    String buf = string_alloc(lexer->arena, 64);
+    usize buf_len = 0;
+    usize src_ptr = lexer->cursor;
+    char c;
+    while ((c = lexer->src.data[src_ptr++]) && 
+        (isalnum(c) || c == '_')) {
+        buf_len++;
+    }
+
+    String buf = string_alloc(lexer->arena, buf_len+1);
     u64 buf_ptr = 0;
 
     buf.data[buf_ptr++] = lexer->src.data[lexer->cursor-1];
 
-    while (!lexer_bound(lexer) && buf_ptr < 65 &&
+    while (!lexer_bound(lexer) &&
             (isalnum(lexer_peek(lexer)) || lexer_peek(lexer) == '_')) {
           buf.data[buf_ptr++] = lexer_consume(lexer);
     }
@@ -316,7 +340,7 @@ Token lexer_next_token(Lexer* lexer) {
             return token(Token_Less);
         }
         case ':': {
-            if (lexer_match(lexer, '=')) {
+            if (lexer_match(lexer, ':')) {
                 return token(Token_DoubleColon);
             } 
 
@@ -348,7 +372,7 @@ Token lexer_next_token(Lexer* lexer) {
 
             LexerErr("Unexpected Token", lexer);
         }
-
-        LexerErr("Unexpected Token", lexer);
     }
+
+    return token(Token_Unexpected);
 }

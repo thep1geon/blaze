@@ -32,7 +32,7 @@ static void arena_resize(Arena* a) {
 // void* arena_resize(Arena* a, )
 
 void* arena_alloc(Arena* a, u64 size) {
-    if (a->mem_len - a->pos_u64 <= size) {
+    if (a->mem_len - a->pos_u64 < size) {
         arena_resize(a);
     }
 
@@ -83,4 +83,6 @@ void arena_dump_mem(Arena* a) {
             printf("\n");
         }
     }
+
+    // printf("\n");
 }
