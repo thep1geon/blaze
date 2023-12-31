@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
         token_print(t);
     }
 
-    // arena_dump_mem(arena);
-    
+    arena_dump_mem(arena);
+
     arena_free(arena);
     return 0;
 }

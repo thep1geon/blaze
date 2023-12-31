@@ -18,12 +18,12 @@ typedef enum {
     Token_LBrace, Token_RBrace,
 
     Token_DoubleEq, Token_BangEquals, Token_DoubleColon, 
-    Token_GreaterEq, Token_LessEq,
+    Token_GreaterEq, Token_LessEq, Token_Range,
 
     Token_If, Token_Else, Token_Elif, Token_For,
     Token_While, Token_Colon, Token_At,
     Token_Func, Token_Class, Token_Let, Token_True,
-    Token_False, Token_And, Token_Or, Token_To,
+    Token_False, Token_And, Token_Or,
 
     Token_EOF,
     Token_Unexpected,

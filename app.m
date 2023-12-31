@@ -34,7 +34,7 @@ for item : w {
     print(item);
 }
 
-for i : 0 to w.len {
+for i : 0..w.len {
     print(w.i)
 }
 

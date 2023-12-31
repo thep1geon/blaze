@@ -23,6 +23,7 @@ static Token     token_make_ident(Lexer* lexer);
 
 static void lexer_free(Lexer* lexer);
 static void lexer_advance(Lexer* lexer);
+static char lexer_peek_offset(Lexer* lexer, usize offset);
 static char lexer_peek(Lexer* lexer);
 static char lexer_consume(Lexer* lexer);
 static bool lexer_bound(Lexer* lexer);
@@ -63,6 +64,7 @@ String token_type_str(TokenType type) {
         case Token_DoubleColon: return string("Token_DoubleColon");
         case Token_LessEq:      return string("Token_LessEq");
         case Token_GreaterEq:   return string("Token_GreaterEq");
+        case Token_Range:          return string("Token_Range");
         case Token_If:          return string("Token_If");
         case Token_Else:        return string("Token_Else");
         case Token_Elif:        return string("Token_Elif");
@@ -78,7 +80,6 @@ String token_type_str(TokenType type) {
         case Token_False:       return string("Token_False");
         case Token_And:         return string("Token_And");
         case Token_Or:          return string("Token_Or");
-        case Token_To:          return string("Token_To");
         case Token_EOF:         return string("Token_EOF");
         case Token_Unexpected:  return string("Token_Unexpected");
         case TokenTypeCount:    return string("TokenTypeCount");
@@ -123,9 +124,6 @@ static TokenType token_get_type(String s) {
     }
     else if (string_eq(string("true"), s)) {
         return Token_True;
-    }
-    else if (string_eq(string("to"), s)) {
-        return Token_To;
     }
     else if (string_eq(string("while"), s)) {
         return Token_While;
@@ -203,12 +201,16 @@ static Token token_make_number(Lexer* lexer) {
     u64 buf_ptr = 0;
     bool dec_point = false;
 
-    buf.data[buf_ptr++] = lexer->src.data[lexer->cursor-1];
+    buf.data[buf_ptr++] = lexer_peek_offset(lexer, -1);
 
     while (!lexer_bound(lexer) &&
     (isdigit(lexer_peek(lexer)) || lexer_peek(lexer) == '.')) {
         char c = lexer_peek(lexer);
         if (c == '.') {
+            if (lexer_peek_offset(lexer, 1) == '.') {
+                return token_new(Token_Number, buf);
+            }
+
             if (dec_point) {
                 LexerErr("Multiple Decimals in Float", lexer);
             } 
@@ -235,7 +237,7 @@ static Token token_make_ident(Lexer* lexer) {
     String buf = string_alloc(lexer->arena, buf_len+1);
     u64 buf_ptr = 0;
 
-    buf.data[buf_ptr++] = lexer->src.data[lexer->cursor-1];
+    buf.data[buf_ptr++] = lexer_peek_offset(lexer, -1);
 
     while (!lexer_bound(lexer) &&
             (isalnum(lexer_peek(lexer)) || lexer_peek(lexer) == '_')) {
@@ -272,8 +274,12 @@ static bool lexer_bound(Lexer* lexer) {
     return lexer->src.data[lexer->cursor] == '\0';
 }
 
+static char lexer_peek_offset(Lexer* lexer, usize offset) {
+    return lexer->src.data[lexer->cursor+offset];
+}
+
 static char lexer_peek(Lexer* lexer) {
-    return lexer->src.data[lexer->cursor];
+    return lexer_peek_offset(lexer, 0);
 }
 
 static bool lexer_match(Lexer* lexer, char expected) {
@@ -346,7 +352,12 @@ Token lexer_next_token(Lexer* lexer) {
 
             return token(Token_Colon);
         }
-        case '.': return token(Token_Dot);
+        case '.': {
+            if (lexer_match(lexer, '.')) {
+                return token(Token_Range);
+            }
+            return token(Token_Dot);
+        }
         case ',': return token(Token_Comma);
         case '/': return token(Token_Slash);
         case '*': return token(Token_Star);
