@@ -2,6 +2,7 @@ SRC_DIR := src
 OBJ_DIR := obj
 TARGET_DIR := bin
 TARGET := $(TARGET_DIR)/mc
+CC := gcc
 
 # Find all .c files in subdirectories of SRC_DIR
 SRC_FILES := $(shell find $(SRC_DIR) -type f -name "*.c")
@@ -16,11 +17,11 @@ all: $(TARGET)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(@D)
-	gcc $(CFLAGS) $^ -o $@ $(LIBS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
 run: $(TARGET)
 	$(TARGET)

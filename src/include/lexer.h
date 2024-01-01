@@ -11,19 +11,21 @@ typedef enum {
 
     Token_Plus, Token_Dash, Token_Star, Token_Slash,
     Token_Comma, Token_Dot, Token_Semicolon, Token_Greater,
-    Token_Less, Token_Eq, Token_Bang,
+    Token_Less, Token_Eq, Token_Bang, Token_Inc, Token_Dec,
+    Token_PlusEq, Token_MinusEq, Token_MultEq, Token_DivEq,
 
     Token_LParen, Token_RParen,
     Token_RCurly, Token_LCurly,
     Token_LBrace, Token_RBrace,
 
-    Token_DoubleEq, Token_BangEquals, Token_DoubleColon, 
+    Token_DoubleEq, Token_DoubleColon, 
     Token_GreaterEq, Token_LessEq, Token_Range,
 
     Token_If, Token_Else, Token_Elif, Token_For,
     Token_While, Token_Colon, Token_At,
     Token_Func, Token_Class, Token_Let, Token_True,
-    Token_False, Token_And, Token_Or,
+    Token_False, Token_And, Token_Or, Token_Return,
+    Token_Nil, Token_Not,
 
     Token_EOF,
     Token_Unexpected,

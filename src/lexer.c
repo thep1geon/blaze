@@ -60,11 +60,16 @@ String token_type_str(TokenType type) {
         case Token_LBrace:      return string("Token_LBrace");
         case Token_RBrace:      return string("Token_RBrace");
         case Token_DoubleEq:    return string("Token_DoubleEq");
-        case Token_BangEquals:  return string("Token_BangEquals");
         case Token_DoubleColon: return string("Token_DoubleColon");
         case Token_LessEq:      return string("Token_LessEq");
         case Token_GreaterEq:   return string("Token_GreaterEq");
-        case Token_Range:          return string("Token_Range");
+        case Token_Inc:         return string("Token_Inc");
+        case Token_Dec:         return string("Token_Dec");
+        case Token_PlusEq:      return string("Token_PlusEq");
+        case Token_MinusEq:     return string("Token_PlusEq");
+        case Token_MultEq:      return string("Token_PlusEq");
+        case Token_DivEq:       return string("Token_PlusEq");
+        case Token_Range:       return string("Token_Range");
         case Token_If:          return string("Token_If");
         case Token_Else:        return string("Token_Else");
         case Token_Elif:        return string("Token_Elif");
@@ -80,6 +85,9 @@ String token_type_str(TokenType type) {
         case Token_False:       return string("Token_False");
         case Token_And:         return string("Token_And");
         case Token_Or:          return string("Token_Or");
+        case Token_Return:      return string("Token_Return");
+        case Token_Nil:         return string("Token_Nil");
+        case Token_Not:         return string("Token_Not");
         case Token_EOF:         return string("Token_EOF");
         case Token_Unexpected:  return string("Token_Unexpected");
         case TokenTypeCount:    return string("TokenTypeCount");
@@ -119,8 +127,17 @@ static TokenType token_get_type(String s) {
     else if (string_eq(string("let"), s)) {
         return Token_Let;
     }
+    else if (string_eq(string("nil"), s)) {
+        return Token_Nil;
+    }
+    else if (string_eq(string("not"), s)) {
+        return Token_Not;
+    }
     else if (string_eq(string("or"), s)) {
         return Token_Or;
+    }
+    else if (string_eq(string("return"), s)) {
+        return Token_Return;
     }
     else if (string_eq(string("true"), s)) {
         return Token_True;
@@ -246,7 +263,15 @@ static Token token_make_ident(Lexer* lexer) {
 
     buf.len = buf_ptr;
 
-    return token_new(token_get_type(buf), buf);
+    // return token_new(token_get_type(buf), buf);
+
+    TokenType type = token_get_type(buf);
+    if (type == Token_Ident) {
+        return token_new(type, buf);
+    } else {
+        arena_dealloc_last(lexer->arena);
+        return token(type);
+    }
 }
 
 /*
@@ -324,13 +349,6 @@ Token lexer_next_token(Lexer* lexer) {
 
             return token(Token_Eq);
         }
-        case '!': {
-            if (lexer_match(lexer, '=')) {
-                return token(Token_BangEquals);
-            } 
-
-            return token(Token_Bang);
-        }
         case '>': {
             if (lexer_match(lexer, '=')) {
                 return token(Token_GreaterEq);
@@ -358,13 +376,42 @@ Token lexer_next_token(Lexer* lexer) {
             }
             return token(Token_Dot);
         }
+        case '+': {
+            if (lexer_match(lexer, '+')) {
+                return token(Token_Inc);
+            } 
+            else if (lexer_match(lexer, '=')) {
+                return token(Token_PlusEq);
+            }
+            return token(Token_Plus);
+        }
+        case '-': {
+            if (lexer_match(lexer, '-')) {
+                return token(Token_Dec);
+            } 
+            else if (lexer_match(lexer, '=')) {
+                return token(Token_MinusEq);
+            }
+            return token(Token_Plus);
+        }
+        case '*': {
+            if (lexer_match(lexer, '=')) {
+                return token(Token_MultEq);
+            } 
+
+            return token(Token_Star);
+        }
+        case '/': {
+            if (lexer_match(lexer, '=')) {
+                return token(Token_DivEq);
+            } 
+
+            return token(Token_Slash);
+        }
+        case '!': return token(Token_Bang);
         case ',': return token(Token_Comma);
-        case '/': return token(Token_Slash);
-        case '*': return token(Token_Star);
-        case '-': return token(Token_Dash);
-        case '+': return token(Token_Plus);
         case ';': return token(Token_Semicolon);
-        case '"': return token_make_string(lexer);
+        case '\'': case '"': return token_make_string(lexer);
         case '{': return token(Token_LCurly);
         case '}': return token(Token_RCurly);
         case '[': return token(Token_LBrace);

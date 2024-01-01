@@ -29,8 +29,6 @@ static void arena_resize(Arena* a) {
     memset((void*)((char*)a->mem+a->pos_u64), 0, a->mem_len-a->pos_u64);
 }
 
-// void* arena_resize(Arena* a, )
-
 void* arena_alloc(Arena* a, u64 size) {
     if (a->mem_len - a->pos_u64 < size) {
         arena_resize(a);

@@ -1,6 +1,8 @@
-let a = 5 + 10;
+vasm {
+    push 32,
+    push 37,
+    add,
+    dump,
+}
 
-print(a);
-
-let x = 3..32.0;
-# Set x = 3
+let x = nil;
