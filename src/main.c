@@ -1,11 +1,10 @@
 #include "include/arena.h"
+#include "include/ast.h"
 #include "include/err.h"
 #include "include/lexer.h"
+#include "include/parser.h"
 #include "include/string.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-
 
 int main(int argc, char** argv) {
     Arena* arena = arena_new();
@@ -13,7 +12,7 @@ int main(int argc, char** argv) {
     if (argc < 2) {
         arena_free(arena);
         puts("Usage: mc [program].m");
-        exit(5);
+        return 5;
     }
 
     String filepath = string(argv[1]);
@@ -21,31 +20,45 @@ int main(int argc, char** argv) {
     FILE* f = fopen(filepath.data, "rb");
     if (!f) {
         arena_free(arena);
-        err("Failed to open file", __LINE__, 0);
+        err("Failed to open file", 0, 0);
     }
 
     fseek(f, 0L, SEEK_END);
     usize sz = ftell(f);
     rewind(f);
 
-    String src = string_alloc(arena, sz);
-    usize s_ptr = 0;
+    String src = string_alloc(arena, sz+1);
 
-    char c;
-    while ((c = fgetc(f)) != EOF) {
-        src.data[s_ptr++] = c;
-    }
+    fread(src.data, 1, sz, f);
 
     fclose(f);
 
-    Lexer *l = lexer_new(arena, src);
+    Lexer* lexer = lexer_new(arena, src);
 
-    Token t;
-    while ((t = lexer_next_token(l)).type != Token_EOF) {
-        token_print(t);
+    Parser* parser = parser_new(lexer);
+
+    parser_parse(parser);
+
+    String output_file = string_substring(arena, 
+                                          string(argv[1]), 
+                                          0, 
+                                          string(argv[1]).len - 1);
+
+    output_file = string_concat(arena, output_file, string("mv"));
+
+    if (argc > 3) {
+        output_file = string(argv[2]);
     }
 
-    // arena_dump_mem(arena);
+    f = fopen(output_file.data, "w");
+
+    // ast_print(parser->ast);
+    // printf("\n");
+
+    ast_emit(parser->ast, f);
+    // fprintf(f, "print x\n");
+
+    fclose(f);
 
     arena_free(arena);
     return 0;

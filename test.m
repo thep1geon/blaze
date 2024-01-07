@@ -1,8 +1,11 @@
-vasm {
-    push 32,
-    push 37,
-    add,
-    dump,
-}
+let True = false;
+let False = true;
 
-let x = nil;
+let x = 5; 
+let y = 10;
+
+let z = x + y;
+
+print(z);
+
+false;

@@ -25,7 +25,7 @@ typedef enum {
     Token_While, Token_Colon, Token_At,
     Token_Func, Token_Class, Token_Let, Token_True,
     Token_False, Token_And, Token_Or, Token_Return,
-    Token_Nil, Token_Not,
+    Token_Nil, Token_NotEq,
 
     Token_EOF,
     Token_Unexpected,
@@ -35,9 +35,12 @@ typedef enum {
 typedef struct token_t {
     TokenType type;
     String lexeme;
+
+    u32 line;
+    u32 col;
 } Token;
 
-#define token(type) token_new(type, string(""))
+#define token(type, line, col) token_new(type, string(""), line, col)
 
 typedef struct lexer_t {
     Arena* arena;
@@ -47,8 +50,9 @@ typedef struct lexer_t {
     u64 column;
 } Lexer;
 
-Token token_new(TokenType type, String lexeme);
+Token token_new(TokenType type, String lexeme, u32 line, u32 col);
 void token_print(Token t);
+void token_loc_print(Token t);
 String token_type_str(TokenType type);
 
 Lexer* lexer_new(Arena* a, String src);

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 String string(char* string_lit) {
     String s;
@@ -163,6 +164,10 @@ String string_replace(Arena* a, String str, String needle, String replacement) {
 
     arena_free(scratch);
     return s;
+}
+
+f64 string_to_number(String str) {
+    return atof(str.data);
 }
 
 bool string_eq(String a, String b) {

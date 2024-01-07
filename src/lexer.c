@@ -29,11 +29,12 @@ static char lexer_consume(Lexer* lexer);
 static bool lexer_bound(Lexer* lexer);
 static bool lexer_match(Lexer* lexer, char expected);
 
-Token token_new(TokenType type, String lexeme) {
+Token token_new(TokenType type, String lexeme, u32 line, u32 col) {
     Token t;
     t.type = type;
-    t.lexeme.data = lexeme.data;
-    t.lexeme.len = lexeme.len;
+    t.lexeme = lexeme;
+    t.line = line;
+    t.col = col;
     return t;
 }
 
@@ -87,7 +88,7 @@ String token_type_str(TokenType type) {
         case Token_Or:          return string("Token_Or");
         case Token_Return:      return string("Token_Return");
         case Token_Nil:         return string("Token_Nil");
-        case Token_Not:         return string("Token_Not");
+        case Token_NotEq:         return string("Token_Not");
         case Token_EOF:         return string("Token_EOF");
         case Token_Unexpected:  return string("Token_Unexpected");
         case TokenTypeCount:    return string("TokenTypeCount");
@@ -97,6 +98,14 @@ String token_type_str(TokenType type) {
 
 void token_print(Token t) {
     printf("Token [Type: %s, Lexeme: %s]\n", token_type_str(t.type).data, t.lexeme.data);
+}
+
+void token_loc_print(Token t) {
+    printf("Token [Type: %s, Lexeme: %s] %d:%d\n", 
+           token_type_str(t.type).data, 
+           t.lexeme.data,
+           t.line,
+           t.col);
 }
 
 static TokenType token_get_type(String s) {
@@ -131,7 +140,7 @@ static TokenType token_get_type(String s) {
         return Token_Nil;
     }
     else if (string_eq(string("not"), s)) {
-        return Token_Not;
+        return Token_NotEq;
     }
     else if (string_eq(string("or"), s)) {
         return Token_Or;
@@ -202,7 +211,7 @@ static Token token_make_string(Lexer* lexer) {
 
     lexer_advance(lexer);
 
-    return token_new(Token_String, buf);
+    return token_new(Token_String, buf, lexer->line_number, lexer->column);
 }
 
 static Token token_make_number(Lexer* lexer) {
@@ -225,7 +234,7 @@ static Token token_make_number(Lexer* lexer) {
         char c = lexer_peek(lexer);
         if (c == '.') {
             if (lexer_peek_offset(lexer, 1) == '.') {
-                return token_new(Token_Number, buf);
+                return token_new(Token_Number, buf, lexer->line_number, lexer->column);
             }
 
             if (dec_point) {
@@ -239,7 +248,7 @@ static Token token_make_number(Lexer* lexer) {
         lexer_advance(lexer);
     }
 
-    return token_new(Token_Number, buf);
+    return token_new(Token_Number, buf, lexer->line_number, lexer->column);
 }
 
 static Token token_make_ident(Lexer* lexer) {
@@ -267,10 +276,10 @@ static Token token_make_ident(Lexer* lexer) {
 
     TokenType type = token_get_type(buf);
     if (type == Token_Ident) {
-        return token_new(type, buf);
+        return token_new(type, buf, lexer->line_number, lexer->column);
     } else {
         arena_dealloc_last(lexer->arena);
-        return token(type);
+        return token(type, lexer->line_number, lexer->column);
     }
 }
 
@@ -328,7 +337,7 @@ static void lexer_advance(Lexer* lexer) {
 
 Token lexer_next_token(Lexer* lexer) {
     if (lexer_bound(lexer)) {
-        return token(Token_EOF);
+        return token(Token_EOF, lexer->line_number, lexer->column);
     }
 
     char c = lexer_consume(lexer);
@@ -344,81 +353,81 @@ Token lexer_next_token(Lexer* lexer) {
     switch (c) {
         case '=': {
             if (lexer_match(lexer, '=')) {
-                return token(Token_DoubleEq);
+                return token(Token_DoubleEq, lexer->line_number, lexer->column);
             }
 
-            return token(Token_Eq);
+            return token(Token_Eq, lexer->line_number, lexer->column);
         }
         case '>': {
             if (lexer_match(lexer, '=')) {
-                return token(Token_GreaterEq);
+                return token(Token_GreaterEq, lexer->line_number, lexer->column);
             } 
 
-            return token(Token_Greater);
+            return token(Token_Greater, lexer->line_number, lexer->column);
         }
         case '<': {
             if (lexer_match(lexer, '=')) {
-                return token(Token_LessEq);
+                return token(Token_LessEq, lexer->line_number, lexer->column);
             } 
 
-            return token(Token_Less);
+            return token(Token_Less, lexer->line_number, lexer->column);
         }
         case ':': {
             if (lexer_match(lexer, ':')) {
-                return token(Token_DoubleColon);
+                return token(Token_DoubleColon, lexer->line_number, lexer->column);
             } 
 
-            return token(Token_Colon);
+            return token(Token_Colon, lexer->line_number, lexer->column);
         }
         case '.': {
             if (lexer_match(lexer, '.')) {
-                return token(Token_Range);
+                return token(Token_Range, lexer->line_number, lexer->column);
             }
-            return token(Token_Dot);
+            return token(Token_Dot, lexer->line_number, lexer->column);
         }
         case '+': {
             if (lexer_match(lexer, '+')) {
-                return token(Token_Inc);
+                return token(Token_Inc, lexer->line_number, lexer->column);
             } 
             else if (lexer_match(lexer, '=')) {
-                return token(Token_PlusEq);
+                return token(Token_PlusEq, lexer->line_number, lexer->column);
             }
-            return token(Token_Plus);
+            return token(Token_Plus, lexer->line_number, lexer->column);
         }
         case '-': {
             if (lexer_match(lexer, '-')) {
-                return token(Token_Dec);
+                return token(Token_Dec, lexer->line_number, lexer->column);
             } 
             else if (lexer_match(lexer, '=')) {
-                return token(Token_MinusEq);
+                return token(Token_MinusEq, lexer->line_number, lexer->column);
             }
-            return token(Token_Plus);
+            return token(Token_Dash, lexer->line_number, lexer->column);
         }
         case '*': {
             if (lexer_match(lexer, '=')) {
-                return token(Token_MultEq);
+                return token(Token_MultEq, lexer->line_number, lexer->column);
             } 
 
-            return token(Token_Star);
+            return token(Token_Star, lexer->line_number, lexer->column);
         }
         case '/': {
             if (lexer_match(lexer, '=')) {
-                return token(Token_DivEq);
+                return token(Token_DivEq, lexer->line_number, lexer->column);
             } 
 
-            return token(Token_Slash);
+            return token(Token_Slash, lexer->line_number, lexer->column);
         }
-        case '!': return token(Token_Bang);
-        case ',': return token(Token_Comma);
-        case ';': return token(Token_Semicolon);
+        case '!': return token(Token_Bang, lexer->line_number, lexer->column);
+        case ',': return token(Token_Comma, lexer->line_number, lexer->column);
+        case ';': return token(Token_Semicolon, lexer->line_number, lexer->column);
         case '\'': case '"': return token_make_string(lexer);
-        case '{': return token(Token_LCurly);
-        case '}': return token(Token_RCurly);
-        case '[': return token(Token_LBrace);
-        case ']': return token(Token_RBrace);
-        case '(': return token(Token_LParen);
-        case ')': return token(Token_RParen);
-        case '@': return token(Token_At);
+        case '{': return token(Token_LCurly, lexer->line_number, lexer->column);
+        case '}': return token(Token_RCurly, lexer->line_number, lexer->column);
+        case '[': return token(Token_LBrace, lexer->line_number, lexer->column);
+        case ']': return token(Token_RBrace, lexer->line_number, lexer->column);
+        case '(': return token(Token_LParen, lexer->line_number, lexer->column);
+        case ')': return token(Token_RParen, lexer->line_number, lexer->column);
+        case '@': return token(Token_At, lexer->line_number, lexer->column);
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9': {
             return token_make_number(lexer);
@@ -432,5 +441,5 @@ Token lexer_next_token(Lexer* lexer) {
         }
     }
 
-    return token(Token_Unexpected);
+    return token(Token_Unexpected, lexer->line_number, lexer->column);
 }

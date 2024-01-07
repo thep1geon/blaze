@@ -52,5 +52,5 @@ func main() {
     z += 54;
 
     print(++z);
-    print((0..w.len)[0])
+    print((0..w.len)[0]);
 }

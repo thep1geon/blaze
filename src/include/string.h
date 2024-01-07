@@ -22,6 +22,7 @@ String string_concat(Arena* a, String str_a, String str_b);
 String string_replace(Arena* a, String str, String needle, String replacement);
 
 u64    string_index_of(String str, String substr);
+f64    string_to_number(String str);
 bool   string_eq(String a, String b);
 
 #endif  //__STRING_H

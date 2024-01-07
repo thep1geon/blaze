@@ -72,7 +72,7 @@ void arena_clear(Arena* a) {
 }
 
 void arena_dump_mem(Arena* a) {
-    for (u64 i = 0; i < a->mem_len; ++i) {
+    for (u64 i = 0; i < a->pos_u64; ++i) {
         if (i == a->pos_u64) printf("^");
         printf("%02hhx ", ((char*)a->mem)[i]);
 
@@ -82,5 +82,5 @@ void arena_dump_mem(Arena* a) {
         }
     }
 
-    // printf("\n");
+    printf("\n");
 }

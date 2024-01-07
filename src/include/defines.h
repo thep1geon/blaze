@@ -27,5 +27,5 @@ typedef i64 isize;
 typedef u32 usize;
 typedef i32 isize;
 #endif
-          
+
 #endif  //__DEFINES_H
