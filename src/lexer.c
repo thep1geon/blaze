@@ -78,9 +78,8 @@ String token_type_str(TokenType type) {
         case Token_Bang:        return string("Token_Bang");
         case Token_While:       return string("Token_While");
         case Token_Colon:       return string("Token_Colon");
-        case Token_At:          return string("Token_At");
         case Token_Func:        return string("Token_Func");
-        case Token_Class:       return string("Token_Class");
+        case Token_Type:       return string("Token_Type");
         case Token_Let:         return string("Token_Let");
         case Token_True:        return string("Token_True");
         case Token_False:       return string("Token_False");
@@ -112,8 +111,8 @@ static TokenType token_get_type(String s) {
     if (string_eq(string("and"), s)) {
         return Token_And;
     }
-    else if (string_eq(string("class"), s)) {
-        return Token_Class;
+    else if (string_eq(string("type"), s)) {
+        return Token_Type;
     }
     else if (string_eq(string("elif"), s)) {
         return Token_Elif;
@@ -433,7 +432,6 @@ Token lexer_next_token(Lexer* lexer) {
         case ']': return token(Token_RBrace, lexer->line_number, lexer->column);
         case '(': return token(Token_LParen, lexer->line_number, lexer->column);
         case ')': return token(Token_RParen, lexer->line_number, lexer->column);
-        case '@': return token(Token_At, lexer->line_number, lexer->column);
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9': {
             return token_make_number(lexer);

@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     String output_file = string_substring(arena, 
                                           string(argv[1]), 
                                           0, 
-                                          string(argv[1]).len);
+                                          string(argv[1]).len-1);
     
     output_file = string_concat(arena, output_file, string("mv"));
     

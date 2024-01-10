@@ -1,7 +1,7 @@
 SRC_DIR := src
 OBJ_DIR := obj
 TARGET_DIR := bin
-TARGET := $(TARGET_DIR)/mc
+TARGET := $(TARGET_DIR)/blazeit
 CC := gcc
 
 # Find all .c files in subdirectories of SRC_DIR
@@ -22,6 +22,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+	cp bin/blazeit ~/bin/blazeit
 
 run: $(TARGET)
 	$(TARGET)

@@ -10,19 +10,7 @@ call print_str tmp_var
 del tmp_var
 
 addr_1:
-str "Hello World"
-pop tmp_var
-call print_str tmp_var
-del tmp_var
-
-addr_2:
-str "Hello World"
-pop tmp_var
-call print_str tmp_var
-del tmp_var
-
-addr_3:
 push 3.00
 
-addr_4:
+addr_2:
 stop

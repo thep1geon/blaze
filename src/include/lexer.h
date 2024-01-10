@@ -22,8 +22,8 @@ typedef enum {
     Token_GreaterEq, Token_LessEq, Token_Range,
 
     Token_If, Token_Else, Token_Elif, Token_For,
-    Token_While, Token_Colon, Token_At,
-    Token_Func, Token_Class, Token_Let, Token_True,
+    Token_While, Token_Colon,
+    Token_Func, Token_Type, Token_Let, Token_True,
     Token_False, Token_And, Token_Or, Token_Return,
     Token_Nil, Token_NotEq,
 
