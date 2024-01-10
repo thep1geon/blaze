@@ -11,7 +11,7 @@ typedef struct string_t {
 
 String string(char* string_lit);
 String string_format(Arena* a, const char* format, ...);
-String string_alloc(Arena *a, u64 len);
+String string_alloc(Arena* a, u64 len);
 String string_alloc_str(Arena* a, char* lit);
 
 void   string_print(String s);

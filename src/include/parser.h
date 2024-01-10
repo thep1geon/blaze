@@ -1,6 +1,7 @@
 #ifndef __PARSER_H
 #define __PARSER_H
 
+#include "hashmap.h"
 #include "lexer.h"
 #include "ast.h"
 
@@ -19,6 +20,7 @@ typedef struct parser_t {
     AST*   ast;
     Arena* arena;
     Lexer* lexer;   
+    HashMap* var_map;
 
     Token prev;
     Token curr;

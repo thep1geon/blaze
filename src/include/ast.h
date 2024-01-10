@@ -1,6 +1,7 @@
 #ifndef __AST_H
 #define __AST_H
 
+#include "hashmap.h"
 #define AST_NEW(arena, tag, ...) \
     ast_new(arena, (AST){tag, {.tag =(struct tag){__VA_ARGS__}}})
 
@@ -14,11 +15,13 @@ typedef struct AST AST;
 struct AST {
     enum {
         AST_PROGRAM,
+        AST_BLOCK,
         
         AST_NUMBER,
         AST_STR,
         AST_IDENT,
         AST_BOOL,
+        AST_NIL,
 
         AST_EQ,
         AST_NEQ,
@@ -42,11 +45,19 @@ struct AST {
 
         AST_LET,
         AST_PRINT,
+
+        AST_IF,
     } tag;
 
     union {
         struct AST_PROGRAM 
         { AST* body[15]; u32 stmt_count;} AST_PROGRAM;
+
+        struct AST_BLOCK
+        { AST** stmts; usize stmt_count; } AST_BLOCK;
+
+        struct AST_NIL
+        {void* p; } AST_NIL;
 
         struct AST_NUMBER 
         { f32 val; } AST_NUMBER;
@@ -119,11 +130,14 @@ struct AST {
 
         struct AST_PRINT
         { AST* expr; } AST_PRINT;
+
+        struct AST_IF
+        {AST* expr; AST* body[15]; usize stmt_count; } AST_IF;
     } data;
 };
 
 AST* ast_new(Arena* a, AST ast);
-void ast_print(AST* ast);
-void ast_emit(AST* ast, FILE* f);
+void ast_print(AST* ast, HashMap* map);
+void ast_emit(AST* ast, HashMap* map, FILE* f);
 
 #endif  //__AST_H

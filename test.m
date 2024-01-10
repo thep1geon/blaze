@@ -1,11 +1,4 @@
-let True = false;
-let False = true;
+print "Hello World";
 
-let x = 5; 
-let y = 10;
-
-let z = x + y;
-
-print(z);
-
-false;
+3;
+# This is a comment

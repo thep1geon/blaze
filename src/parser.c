@@ -1,12 +1,12 @@
 #include "include/parser.h"
 #include "include/arena.h"
 #include "include/ast.h"
+#include "include/hashmap.h"
 #include "include/lexer.h"
 #include "include/string.h"
 #include "include/err.h"
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 static u64 err_line = 0;
 static u64 err_col = 0;
@@ -15,14 +15,14 @@ static u64 err_col = 0;
 err_line = token.line;\
 err_col = token.col;\
 parser_free(parser);\
-err(msg, err_line, err_col-1);\
+err(msg, err_line, err_col);\
 } while (0)
 
 static Precedence precedence_lookup[TokenTypeCount] = {
     [Token_Or] = Precedence_Or,
     [Token_And] = Precedence_And,
-    [Token_NotEq] = Precedence_Cmp,
-    [Token_DoubleEq] = Precedence_Cmp,
+    [Token_NotEq] = Precedence_EqCmp,
+    [Token_DoubleEq] = Precedence_EqCmp,
     [Token_Bang] = Precedence_Not,
     [Token_Greater] = Precedence_Cmp,
     [Token_GreaterEq] = Precedence_Cmp,
@@ -47,6 +47,8 @@ Parser* parser_new(Lexer* lexer) {
 
     AST ast = {.tag=AST_PROGRAM, .data.AST_PROGRAM={.stmt_count=0}};
     p->ast = ast_new(p->arena, ast);
+
+    p->var_map = hashmap_new(p->arena);
     
     parser_advance(p);
     parser_advance(p);
@@ -72,25 +74,28 @@ static AST* parse_stmt(Parser* p) {
             parser_advance(p); 
             parser_advance(p); 
 
+            VarType type = TypeNil;
+            switch (p->curr.type) {
+                case Token_Nil: break;
+                case Token_String: type = TypeStr; break;
+                case Token_Number: type = TypeNum; break;
+                case Token_True:
+                case Token_False: type = TypeBool; break;
+                default: break;
+            }
+
+            hashmap_insert(p->var_map, data->ident, type);
+                
             data->expr = parse_expr(p, Precedence_Min);
         } 
     } 
     else if (p->curr.type == Token_Ident) {
         if (string_eq(p->curr.lexeme, string("print"))) {
-            parser_advance(p);
-            if (p->curr.type != Token_LParen) {
-                ParserErr(p, p->curr, "Missing Opening Paren");
-            }
-
             stmt->tag = AST_PRINT;
 
             parser_advance(p);
 
             stmt->data.AST_PRINT.expr = parse_expr(p, Precedence_Min);
-            parser_advance(p);
-            if (p->prev.type != Token_RParen) {
-                ParserErr(p, p->prev, "Missing Closing Paren");
-            }
         }
         else {
             switch (p->next.type) {
@@ -130,7 +135,7 @@ static AST* parse_stmt(Parser* p) {
                     stmt->data.AST_DIVEQ.expr = parse_expr(p, Precedence_Min);
                     break;
                 }
-                default: ParserErr(p, p->curr, "Not Implemented #0");
+                default: token_print(p->curr); ParserErr(p, p->curr, "Not Implemented #0");
             } 
         }
     }
@@ -170,6 +175,11 @@ static AST* parse_terminal_expr(Parser* p) {
         case Token_Bang: {
             parser_advance(p);
             ret = AST_NEW(p->arena, AST_NOT, parse_terminal_expr(p));
+            break;
+        }
+        case Token_Nil: {
+            parser_advance(p);
+            ret = AST_NEW(p->arena, AST_NIL, 0);
             break;
         }
         case Token_String: {
@@ -320,8 +330,10 @@ void parser_parse(Parser* p) {
     while (p->curr.type != Token_EOF && stmt_list->stmt_count < 15) {
         p->ast->data.AST_PROGRAM.body[stmt_list->stmt_count++] = parse_stmt(p);
          
-        if (p->curr.type == Token_Semicolon) {
-            parser_advance(p);
+        if (p->curr.type != Token_Semicolon) {
+            ParserErr(p, p->prev, "Expected Semicolon");
         }
+
+        parser_advance(p);
     }
 }

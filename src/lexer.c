@@ -188,10 +188,10 @@ static Token token_make_string(Lexer* lexer) {
             lexer_advance(lexer);
 
             switch (lexer_consume(lexer)) {
-                case 'n': buf.data[buf_ptr++] = '\n'; break;
-                case 't': buf.data[buf_ptr++] = '\t'; break;
-                case 'r': buf.data[buf_ptr++] = '\r'; break;
-                case 'b': buf.data[buf_ptr++] = '\b'; break;
+                case 'n': buf.data[buf_ptr++] = '\\'; buf.data[buf_ptr++] = 'n'; break;
+                case 't': buf.data[buf_ptr++] = '\\'; buf.data[buf_ptr++] = 't'; break;
+                case 'r': buf.data[buf_ptr++] = '\\'; buf.data[buf_ptr++] = 'r'; break;
+                case 'b': buf.data[buf_ptr++] = '\\'; buf.data[buf_ptr++] = 'b'; break;
                 case '\'': buf.data[buf_ptr++] = '\''; break;
                 case '"': buf.data[buf_ptr++] = '"'; break;
                 case '\\': buf.data[buf_ptr++] = '\\'; break;
@@ -351,6 +351,12 @@ Token lexer_next_token(Lexer* lexer) {
         return lexer_next_token(lexer);
     }
     switch (c) {
+        case '#': {
+            while (!lexer_bound(lexer) && lexer_peek(lexer) != '\n') {
+                lexer_consume(lexer);
+            }
+            return lexer_next_token(lexer);
+        }
         case '=': {
             if (lexer_match(lexer, '=')) {
                 return token(Token_DoubleEq, lexer->line_number, lexer->column);

@@ -45,12 +45,9 @@ String string_alloc_str(Arena* a, char* lit) {
 }
 
 String string_alloc(Arena* a, u64 len) {
-    len++;
-    assert(len <= a->mem_len);
     String s;
-    s.data = (char*)arena_alloc(a, len);
+    s.data = (char*)arena_alloc(a, len+1);
     s.len = len;
-    s.data[len] = '\0';
     return s;
 }
 

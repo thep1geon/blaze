@@ -1,34 +1,28 @@
 import "stdlib.mv"
+
 jmp init_stdlib
-start:
 
+start__:
 addr_0:
-push 0
-pop True
-
-addr_1:
-push 1
-pop False
-
-addr_2:
-push 5.00
-pop x
-
-addr_3:
-push 10.00
-pop y
-
-addr_4:
-push x
-push y
-add
-pop z
-
-addr_5:
-push z
+str "Hello World"
 pop tmp_var
-print tmp_var
+call print_str tmp_var
 del tmp_var
 
-addr_6:
-push 0
+addr_1:
+str "Hello World"
+pop tmp_var
+call print_str tmp_var
+del tmp_var
+
+addr_2:
+str "Hello World"
+pop tmp_var
+call print_str tmp_var
+del tmp_var
+
+addr_3:
+push 3.00
+
+addr_4:
+stop

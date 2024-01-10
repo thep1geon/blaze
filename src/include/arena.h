@@ -10,6 +10,7 @@
 typedef struct {
     void* mem;
     u64   mem_len;
+
     void* pos;
     u64   pos_u64;
     u64   last_pos_u64;
@@ -29,6 +30,8 @@ void* arena_alloc_zero(Arena* a, u64 size);
 
 void arena_dealloc(Arena* a, u64 size);
 void arena_dealloc_last(Arena* a);
+
+void arena_resize(Arena* a);
 
 void arena_set_pos_back(Arena* a, u64 pos);
 void arena_clear(Arena* a);

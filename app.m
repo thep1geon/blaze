@@ -1,56 +1,66 @@
-class Point {
-    @new(x, y) {
-        self.x = x;
-        self.y = y;
-    }
-    
-    print() {
-        print("x: {this.x}, y: {this.y}");
-    }
+type Point {
+    x: Str, 
+    y: Num
+};
+
+func print_point p: Point {
+    print "Point: {";
+    print p.x;
+    print p.y;
+    print "}";
 }
 
-func add(a, b) {
+func read p: Ptr {
+    vasm "read {p} | tmp"
+}
+
+func add a b {
     return a + b;
 }
 
-func main() {
-    vasm(
-        "call Add 32 64 | x", 
-        "print x"
-    );
+func main {
+    vasm "call Add 32 64 | x", "print x";
 
-    let x = 32;
-    let y = 64;
-    let z = (x+y)*x;
+    let x: Num = 32;
+    let y: Str = 64; # This is basically a pointer but still carries 
+                     # number proprties. It's just how it's used by
+                     # the compiler
+    let p: Ptr = 0;
+
+    let data = read p;
+
+    let z = (x + y) * x;
 
     let w = [21, 32, 43];
 
-    print(w[2]);
-    print(w);
+    print w[2];
+    print w;
 
     for item : w {
         print(item);
     }
 
-    for i : 0..w.len {
-        print(w[i]);
+    for i : 0..len w {
+        print w[i];
     }
 
-    print(x);
-    print(y);
-    print(z);
+    print x;
+    print y;
+    print z;
 
     if x == 32 {
-        print(add(42, 27));
-    } else {
-        print(add(42, -27));
+        print add 42, 27;
+    } 
+    else {
+        print add 42, -27;
     }
 
-    p = Point::new(3, 4);
-    p.print();
+    let p: Point = {10, 32};
+
+    print p.x;
 
     z += 54;
 
-    print(++z);
-    print((0..w.len)[0]);
+    print ++z;
+    print (0..len w)[0];
 }

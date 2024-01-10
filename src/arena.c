@@ -1,4 +1,5 @@
 #include "include/arena.h"
+#include "include/err.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -14,6 +15,7 @@ Arena* arena_new() {
     a->mem_len = size;
     a->pos = a->mem;
     a->pos_u64 = 0;
+
     return a;
 }
 
@@ -22,16 +24,10 @@ void arena_free(Arena *a) {
     free(a);
 }
 
-// TODO: Investigate this resize function
-static void arena_resize(Arena* a) {
-    a->mem_len *= 2;
-    a->mem = realloc(a->mem, a->mem_len);
-    memset((void*)((char*)a->mem+a->pos_u64), 0, a->mem_len-a->pos_u64);
-}
-
 void* arena_alloc(Arena* a, u64 size) {
-    if (a->mem_len - a->pos_u64 < size) {
-        arena_resize(a);
+    if (a->mem_len - a->pos_u64 <= size) {
+        arena_free(a);
+        err("Arena out of memory", 0, 0);
     }
 
     void* ret_mem = a->pos;
@@ -54,7 +50,6 @@ void arena_dealloc(Arena* a, u64 size) {
     a->pos_u64 -= size; 
 
     a->pos = (void*)((char*)a->pos - size);
-    memset(a->pos, 0, a->mem_len-a->pos_u64);
 }
 
 void arena_dealloc_last(Arena *a) {
